@@ -78,6 +78,7 @@ python3 "$workdir/tai/classifier.py" \
     --output_dir "$workdir/tai" \
     --output_file "classified_abstracts.jsonl" \
     --cache_dir "$HF_DATASETS_CACHE" \
+    --taxonomy "taxonomy1" \
     --gpu_memory_utilization 0.9 1>>"$out" 2>>"$err"
 
 #############################################

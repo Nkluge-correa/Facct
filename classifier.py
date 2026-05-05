@@ -18,13 +18,15 @@ from vllm import LLM, SamplingParams
 
 TRITON_CACHE_CLEANUP_AGE = 3600
 VRAM_MB_TO_GB = 1024
-# JSON_BLOCK_PATTERN = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", flags=re.IGNORECASE | re.DOTALL)
-# JSON_OBJECT_PATTERN = re.compile(r"(\{.*\})", flags=re.DOTALL)
-# JSON_SCHEMA_PATTERN = re.compile(
-#         r'"categories"\s*:\s*\[(?P<categories>.*?)\]\s*,\s*"reason"\s*:\s*"(?P<reason>(?:\\.|[^"\\])*)"',
-#         flags=re.DOTALL,
-# )
-# JSON_STRING_PATTERN = re.compile(r'"((?:\\.|[^"\\])*)"')
+
+# All Hail Regular Expressions!
+JSON_BLOCK_PATTERN = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", flags=re.IGNORECASE | re.DOTALL)
+JSON_OBJECT_PATTERN = re.compile(r"(\{.*\})", flags=re.DOTALL)
+JSON_SCHEMA_PATTERN = re.compile(
+         r'"categories"\s*:\s*\[(?P<categories>.*?)\]\s*,\s*"reason"\s*:\s*"(?P<reason>(?:\\.|[^"\\])*)"',
+         flags=re.DOTALL,
+ )
+JSON_STRING_PATTERN = re.compile(r'"((?:\\.|[^"\\])*)"')
 
 TAXONOMY_DEFINITIONS: Dict[str, str] = {
         "Authoritarianism": "Papers about surveillance, state or institutional control, censorship, predictive policing, social scoring, coercive governance, or uses of AI that concentrate power and restrict civil liberties.",
@@ -37,6 +39,20 @@ TAXONOMY_DEFINITIONS: Dict[str, str] = {
 }
 
 TAXONOMY = list(TAXONOMY_DEFINITIONS.keys())
+
+TAXONOMY_DEFINITIONS_2: Dict[str, str] = {
+        "Misinformation": "Papers about false, misleading, or manipulative content, including deepfakes, synthetic media, propaganda, deception, rumor amplification, and the spread or governance of misleading information.",
+        "Bias & Inequality": "Papers about unfair discrimination, disparate impact, representational harm, inequitable access, marginalization, or how AI systems reproduce or worsen social inequality across groups.",
+        "Authenticity": "The paper addresses the risk that AI is used to impersonate people or create deceptive synthetic content.",
+        "Privacy": "The paper addresses the risk that people's personal information is collected, exposed, or misused by AI systems.",
+        "Transparency": "The paper addresses the risk that people cannot understand what AI systems can do or how they work.",
+        "Safety": "The paper addresses the risk that AI systems cause serious harm to people.",
+        "Autonomy & Control": "The paper addresses the risk that AI systems act independently beyond human oversight.",
+        "Trustworthiness": "The paper addresses the general question of whether and when AI systems can be trusted to make important personal decisions.",
+        "Undefined": "Use this only when none of the other taxonomy categories meaningfully apply to the paper's main focus.",
+}
+
+TAXONOMY_2 = list(TAXONOMY_DEFINITIONS_2.keys())
 
 DEFAULT_SYSTEM_PROMPT = (
         "You are a strict research-paper classifier. "
@@ -373,6 +389,8 @@ def print_prompt_example(
         tokenizer: AutoTokenizer,
         processed_indices: set,
         args: argparse.Namespace,
+        active_taxonomy: List[str],
+        active_taxonomy_definitions: Dict[str, str],
 ) -> None:
         sample_index: Optional[int] = None
         sample_row: Optional[pd.Series] = None
@@ -393,8 +411,8 @@ def print_prompt_example(
         prompt = build_prompt(
                 title=sample_row.get(args.title_key, ""),
                 abstract=sample_row.get(args.abstract_key, ""),
-                taxonomy=TAXONOMY,
-                taxonomy_definitions=TAXONOMY_DEFINITIONS,
+                taxonomy=active_taxonomy,
+                taxonomy_definitions=active_taxonomy_definitions,
                 prompt_prefix=args.prompt_prefix,
                 prompt_suffix=args.prompt_suffix,
                 max_abstract_chars=args.max_abstract_chars,
@@ -422,6 +440,14 @@ def print_prompt_example(
 
 def process_dataset(args: argparse.Namespace) -> None:
         setup_triton_cache()
+
+        if args.taxonomy == "taxonomy2":
+                active_taxonomy = TAXONOMY_2
+                active_taxonomy_definitions = TAXONOMY_DEFINITIONS_2
+        else:
+                active_taxonomy = TAXONOMY
+                active_taxonomy_definitions = TAXONOMY_DEFINITIONS
+        print(f"[INFO] Using taxonomy: {args.taxonomy}")
 
         df = load_dataset(args.dataset_path)
         missing_columns = [
@@ -452,7 +478,7 @@ def process_dataset(args: argparse.Namespace) -> None:
                 args.gpu_memory_utilization,
         )
 
-        print_prompt_example(df, tokenizer, processed_indices, args)
+        print_prompt_example(df, tokenizer, processed_indices, args, active_taxonomy, active_taxonomy_definitions)
 
         sampling_params = SamplingParams(
                 max_tokens=args.max_tokens,
@@ -491,8 +517,8 @@ def process_dataset(args: argparse.Namespace) -> None:
                                 model=model,
                                 tokenizer=tokenizer,
                                 sampling_params=sampling_params,
-                                taxonomy=TAXONOMY,
-                                taxonomy_definitions=TAXONOMY_DEFINITIONS,
+                                taxonomy=active_taxonomy,
+                                taxonomy_definitions=active_taxonomy_definitions,
                                 system=args.system,
                                 prompt_prefix=args.prompt_prefix,
                                 prompt_suffix=args.prompt_suffix,
@@ -567,6 +593,7 @@ def parse_args() -> argparse.Namespace:
         parser.add_argument("--max_tokens", type=int, default=1000, help="Max generated tokens.")
         parser.add_argument("--top_p", type=float, default=0.9, help="Top-p sampling.")
 
+        parser.add_argument("--taxonomy", type=str, default="taxonomy1", choices=["taxonomy1", "taxonomy2"], help="Taxonomy to use for classification. 'taxonomy1' (default): Authoritarianism, Bias & Inequality, Disempowerment, Misinformation, Robustness, Extinction Risk, Undefined. 'taxonomy2': Misinformation, Bias & Inequality, Authenticity, Privacy, Transparency, Safety, Autonomy & Control, Trustworthiness, Undefined.")
         parser.add_argument("--system", type=str, default=DEFAULT_SYSTEM_PROMPT, help="System instruction.")
         parser.add_argument("--prompt_prefix", type=str, default=DEFAULT_PROMPT_PREFIX, help="Prompt prefix template.")
         parser.add_argument("--prompt_suffix", type=str, default=DEFAULT_PROMPT_SUFFIX, help="Prompt suffix.")
