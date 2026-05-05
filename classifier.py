@@ -18,13 +18,13 @@ from vllm import LLM, SamplingParams
 
 TRITON_CACHE_CLEANUP_AGE = 3600
 VRAM_MB_TO_GB = 1024
-JSON_BLOCK_PATTERN = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", flags=re.IGNORECASE | re.DOTALL)
-JSON_OBJECT_PATTERN = re.compile(r"(\{.*\})", flags=re.DOTALL)
-JSON_SCHEMA_PATTERN = re.compile(
-        r'"categories"\s*:\s*\[(?P<categories>.*?)\]\s*,\s*"reason"\s*:\s*"(?P<reason>(?:\\.|[^"\\])*)"',
-        flags=re.DOTALL,
-)
-JSON_STRING_PATTERN = re.compile(r'"((?:\\.|[^"\\])*)"')
+# JSON_BLOCK_PATTERN = re.compile(r"```(?:json)?\s*(\{.*?\})\s*```", flags=re.IGNORECASE | re.DOTALL)
+# JSON_OBJECT_PATTERN = re.compile(r"(\{.*\})", flags=re.DOTALL)
+# JSON_SCHEMA_PATTERN = re.compile(
+#         r'"categories"\s*:\s*\[(?P<categories>.*?)\]\s*,\s*"reason"\s*:\s*"(?P<reason>(?:\\.|[^"\\])*)"',
+#         flags=re.DOTALL,
+# )
+# JSON_STRING_PATTERN = re.compile(r'"((?:\\.|[^"\\])*)"')
 
 TAXONOMY_DEFINITIONS: Dict[str, str] = {
         "Authoritarianism": "Papers about surveillance, state or institutional control, censorship, predictive policing, social scoring, coercive governance, or uses of AI that concentrate power and restrict civil liberties.",
