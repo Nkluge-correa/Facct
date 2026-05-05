@@ -20,7 +20,7 @@ VRAM_MB_TO_GB = 1024
 
 TAXONOMY_DEFINITIONS: Dict[str, str] = {
     "Factuality": "The paper addresses the risk that AI systems produce or spread inaccurate, misleading, or fabricated information.",
-    "Bias & Fairness": "The paper addresses the risk that AI systems make biased or discriminatory decisions.",
+    "Bias & Fairness": "Papers about unfair discrimination, disparate impact, representational harm, inequitable access, marginalization, or how AI systems reproduce or worsen social inequality across groups..",
     "Authenticity": "The paper addresses the risk that AI is used to impersonate people or create deceptive synthetic content.",
     "Privacy": "The paper addresses the risk that people's personal information is collected, exposed, or misused by AI systems.",
     "Transparency": "The paper addresses the risk that people cannot understand what AI systems can do or how they work.",
