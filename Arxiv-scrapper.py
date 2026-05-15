@@ -5,7 +5,7 @@ import time
 import os
 import random
 
-# ========================= CONFIG =========================
+
 CATEGORIES = ['cs.AI', 'cs.LG', 'stat.ML']   # used all relevant not just cs.ai as it was still quite fast 
 START_YEAR = 2020
 END_YEAR = 2026
