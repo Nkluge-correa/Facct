@@ -9,7 +9,7 @@ import random
 CATEGORIES = ['cs.AI', 'cs.LG', 'stat.ML']   # used all relevant not just cs.ai as it was still quite fast 
 START_YEAR = 2020
 END_YEAR = 2026
-TARGET_PER_CATEGORY = 1000 #Did not use as I could not create this logic in my script
+TARGET_PER_CATEGORY = 1000 #Did not use as I did not create this logic in my script, I tried getting as many papers as possible instead of limiting it since it was not taking a lot of time
 # I have tried to keep the taxonomy same as before for reasonable comparison
 TAXONOMY = {
     "Authoritarianism": ["surveillance", "censorship", "predictive policing", "social scoring"],
